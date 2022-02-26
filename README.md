@@ -13,13 +13,13 @@ Playing around trying to get boids going in the browser using go for computation
 ## With just go
 
 ```
-go run cmd/server/main.go
+go run server/main.go
 ```
 
 This is handy while doing dev to rebuild and serve
 
 ```
-./build.sh && go run cmd/server/main.go
+./build.sh && go run server/main.go
 ```
 
 ## With browser-sync for live reloading

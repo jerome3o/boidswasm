@@ -5,18 +5,23 @@ import (
 	"syscall/js"
 )
 
+type JsFunc func(this js.Value, args []js.Value) interface{}
+
 func main() {
 	fmt.Println("Boids Online")
-	js.Global().Set("updateBoids", js.FuncOf(updateBoidsWrapper()))
+	update, init := getWrappedBoidsFunctions()
+
+	js.Global().Set("updateBoids", js.FuncOf(update))
+	js.Global().Set("initBoids", js.FuncOf(init))
 	<-make(chan bool)
 }
 
-func updateBoidsWrapper() func(this js.Value, args []js.Value) interface{} {
+func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 
-	boidsF, err := updateBoids()
+	boidsF, init, err := updateBoids()
 
-	return func(this js.Value, args []js.Value) interface{} {
-		if err := checkArgs(args); err != nil {
+	updateWrapped := func(this js.Value, args []js.Value) interface{} {
+		if err := checkUpdateArgs(args); err != nil {
 			return convertError(err)
 		}
 
@@ -28,11 +33,38 @@ func updateBoidsWrapper() func(this js.Value, args []js.Value) interface{} {
 
 		return boidsOutputToJsFriendly(boids)
 	}
+
+	initWrapped := func(this js.Value, args []js.Value) interface{} {
+		if err := checkInitArgs(args); err != nil {
+			return convertError(err)
+		}
+
+		init(
+			args[0].Int(),
+			args[1].Int(),
+		)
+
+		if err != nil {
+			return convertError(err)
+		}
+
+		return nil
+	}
+
+	return updateWrapped, initWrapped
 }
 
-func checkArgs(args []js.Value) error {
+func checkUpdateArgs(args []js.Value) error {
 	if len(args) != 0 {
 		return fmt.Errorf("expected 0 args, found %v", len(args))
+	}
+	return nil
+}
+
+func checkInitArgs(args []js.Value) error {
+	// TODO(j.swannack): This boiler is surely abstracted/abstractable
+	if len(args) != 2 {
+		return fmt.Errorf("expected 2 args, found %v", len(args))
 	}
 	return nil
 }
