@@ -1,1 +1,1 @@
-GOOS=js GOARCH=wasm go build -o assets/boids.wasm cmd/wasm/main.go
+GOOS=js GOARCH=wasm go build -o assets/boids.wasm ./cmd/wasm/
