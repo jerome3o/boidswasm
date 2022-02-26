@@ -6,41 +6,51 @@ import (
 	"syscall/js"
 )
 
-type BoidsOutput struct {
+type BoidsState struct {
 	Boids [][]float64
 }
 
 func main() {
 	fmt.Println("Boids Online")
-	js.Global().Set("updateBoids", js.FuncOf(updateBoidsWrapper))
+	js.Global().Set("updateBoids", js.FuncOf(updateBoidsWrapper()))
 	<-make(chan bool)
 }
 
-func updateBoids() (BoidsOutput, error) {
-	return BoidsOutput{
+func updateBoids() (func() BoidsState, error) {
+	boidsState := BoidsState{
 		Boids: [][]float64{
 			{50, 50, 0, 10},
 			{100, 50, math.Pi / 2, 10},
 			{150, 50, math.Pi, 10},
 			{200, 50, 3 * math.Pi / 2, 10},
-			// {250, 50, 0, 10},
+			{250, 50, 0, 10},
 		},
+	}
+
+	return func() BoidsState {
+		boidsState.Boids[0][2] += math.Pi / 100
+		return boidsState
 	}, nil
+
 }
 
-func updateBoidsWrapper(this js.Value, args []js.Value) interface{} {
+func updateBoidsWrapper() func(this js.Value, args []js.Value) interface{} {
 
-	if err := checkArgs(args); err != nil {
-		return convertError(err)
+	boidsF, err := updateBoids()
+
+	return func(this js.Value, args []js.Value) interface{} {
+		if err := checkArgs(args); err != nil {
+			return convertError(err)
+		}
+
+		boids := boidsF()
+
+		if err != nil {
+			return convertError(err)
+		}
+
+		return boidsOutputToJsFriendly(boids)
 	}
-
-	boids, err := updateBoids()
-
-	if err != nil {
-		return convertError(err)
-	}
-
-	return boidsOutputToJsFriendly(boids)
 }
 
 func checkArgs(args []js.Value) error {
@@ -56,7 +66,7 @@ func convertError(e error) map[string]interface{} {
 	}
 }
 
-func boidsOutputToJsFriendly(boidsOutput BoidsOutput) map[string]interface{} {
+func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 	// TODO(j.swannack): with better understanding of go, you'll probably want
 	// 	to revise this function to construct the output more efficiently
 

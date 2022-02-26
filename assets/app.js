@@ -14,14 +14,14 @@ function setup() {
 
 function draw() {
     boids = updateBoids()
-    background(0)
+    background(255)
     boids.boids.map(v => drawBoid(...v))
 }
 
 function drawBoid(x, y, a, v) {
     push()
 
-    stroke("white")
+    stroke("black")
 
     translate(x, y)
     rotate(a)
