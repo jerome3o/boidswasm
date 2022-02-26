@@ -25,7 +25,7 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 			return convertError(err)
 		}
 
-		boids := boidsF()
+		boids := boidsF(args[0].Float())
 
 		if err != nil {
 			return convertError(err)
@@ -55,14 +55,16 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 }
 
 func checkUpdateArgs(args []js.Value) error {
-	if len(args) != 0 {
-		return fmt.Errorf("expected 0 args, found %v", len(args))
+	// TODO(j.swannack): Check types
+	if len(args) != 1 {
+		return fmt.Errorf("expected 1 args, found %v", len(args))
 	}
 	return nil
 }
 
 func checkInitArgs(args []js.Value) error {
 	// TODO(j.swannack): This boiler is surely abstracted/abstractable
+	// TODO(j.swannack): Check types
 	if len(args) != 2 {
 		return fmt.Errorf("expected 2 args, found %v", len(args))
 	}

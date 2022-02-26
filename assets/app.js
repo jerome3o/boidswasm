@@ -22,7 +22,10 @@ function draw() {
         return
     }
 
-    boids = updateBoids()
+    ms = millis()
+    s = ms / 1000.0
+
+    boids = updateBoids(s)
     background(255)
     boids.boids.map(v => drawBoid(...v))
 }
