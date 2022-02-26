@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"syscall/js"
 )
 
@@ -18,8 +19,11 @@ func main() {
 func updateBoids() (BoidsOutput, error) {
 	return BoidsOutput{
 		Boids: [][]float64{
-			{2, 2, 0, 10},
-			{2, 2, 0, 10},
+			{50, 50, 0, 10},
+			{100, 50, math.Pi / 2, 10},
+			{150, 50, math.Pi, 10},
+			{200, 50, 3 * math.Pi / 2, 10},
+			// {250, 50, 0, 10},
 		},
 	}, nil
 }
