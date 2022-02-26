@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 )
 
 type BoidsState struct {
@@ -16,6 +17,11 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int), error) {
 		if !isInit {
 			return boidsState
 		}
+
+		for _, boid := range boidsState.Boids {
+			boid[2] += t * math.Pi
+		}
+
 		return boidsState
 	}
 

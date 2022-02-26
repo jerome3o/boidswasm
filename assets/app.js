@@ -3,17 +3,18 @@ const go = new Go();
 let w = window.innerWidth > 0 ? window.innerWidth : screen.width;
 let h = window.innerHeight > 0 ? window.innerHeight : screen.height;
 let boidsInitialised = false
+let lastMs = 0.0
 
 WebAssembly.instantiateStreaming(fetch("boids.wasm"), go.importObject).then((result) => {
     go.run(result.instance);
 }).then(v => {
     console.log(initBoids(w, h));
-    console.log(updateBoids());
     boidsInitialised = true  // TODO(j.swannack): actually check for successful init
 });
 
 function setup() {
     createCanvas(w, h)
+    lastMs = millis()
 }
 
 function draw() {
@@ -23,9 +24,10 @@ function draw() {
     }
 
     ms = millis()
-    s = ms / 1000.0
+    timeStep = (ms - lastMs) / 1000
+    lastMs = ms
 
-    boids = updateBoids(s)
+    boids = updateBoids(timeStep)
     background(255)
     boids.boids.map(v => drawBoid(...v))
 }
