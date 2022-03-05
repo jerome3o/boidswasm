@@ -27,7 +27,7 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 	var width float64
 
 	dMax := 100.0
-	vMax := 700.0
+	vMax := 100.0
 
 	update := func(t float64) BoidsState {
 		tTotal += t
@@ -39,19 +39,18 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
 			nearBoids := getNearBoids(x, y, dMax, i, boidsState.Boids)
 
-			sepAX, sepAY := calculateSeparationDeltaV(x, y, vx, vy, nearBoids)
+			ax, ay := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
 			// sepAX, sepAY := moveTowardNearestBoid(x, y, vx, vy, nearBoids)
 
-			vx = sepAX * t
-			vy = sepAY * t
+			vx = vx + ax
+			vy = vy + ay
 
 			s := getDist(0, 0, vx, vy)
-			// if s > vMax {
-			if s > 0 {
+			if s > vMax {
+				// if s > 0 {
 				vx *= vMax / s
 				vy *= vMax / s
 			}
-			// }
 
 			x += vx * t
 			y += vy * t
@@ -94,7 +93,7 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 
 }
 
-func calculateSeparationDeltaV(x, y, vx, vy float64, boids [][]float64) (ax, ay float64) {
+func calculateSeparationDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
 
 	if len(boids) == 0 {
 		return 0.0, 0.0
@@ -115,34 +114,34 @@ func calculateSeparationDeltaV(x, y, vx, vy float64, boids [][]float64) (ax, ay 
 			dySign = -1.0
 		}
 
-		ax += 100 / math.Max(math.Abs(dx), 1) * dxSign
-		ay += 100 / math.Max(math.Abs(dy), 1) * dySign
+		ax += math.Min(maxV/math.Max(math.Abs(dx), 1), maxV) * dxSign
+		ay += math.Min(maxV/math.Max(math.Abs(dy), 1), maxV) * dySign
 	}
 
 	// fmt.Println(ax, ay)
 
-	return ax, ay
+	return ax / float64(len(boids)), ay / float64(len(boids))
 }
 
-func moveTowardNearestBoid(x, y, vx, vy float64, boids [][]float64) (ax, ay float64) {
+// func moveTowardNearestBoid(x, y, vx, vy float64, boids [][]float64) (ax, ay float64) {
 
-	if len(boids) == 0 {
-		return 0.0, 0.0
-	}
+// 	if len(boids) == 0 {
+// 		return 0.0, 0.0
+// 	}
 
-	var closestBoid []float64
-	lastDist := 1000000.0
+// 	var closestBoid []float64
+// 	lastDist := 1000000.0
 
-	for _, boid := range boids {
-		dist := getDist(x, y, boid[0], boid[1])
-		if dist < lastDist {
-			lastDist = dist
-			closestBoid = boid
-		}
-	}
+// 	for _, boid := range boids {
+// 		dist := getDist(x, y, boid[0], boid[1])
+// 		if dist < lastDist {
+// 			lastDist = dist
+// 			closestBoid = boid
+// 		}
+// 	}
 
-	return closestBoid[0] - x, closestBoid[1] - y
-}
+// 	return closestBoid[0] - x, closestBoid[1] - y
+// }
 
 func getNearBoids(x, y, dMax float64, iBoid int, boids [][]float64) [][]float64 {
 	output := make([][]float64, 0)
