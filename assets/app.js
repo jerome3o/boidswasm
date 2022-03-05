@@ -5,6 +5,9 @@ let h = window.innerHeight > 0 ? window.innerHeight : screen.height;
 let boidsInitialised = false
 let lastMs = 0.0
 
+let debugNextPrint = 1000
+let debugNextPrintStep = 100000
+
 WebAssembly.instantiateStreaming(fetch("boids.wasm"), go.importObject).then((result) => {
     go.run(result.instance);
 }).then(v => {
@@ -30,6 +33,12 @@ function draw() {
     boids = updateBoids(timeStep)
     background(255)
     boids.boids.map(v => drawBoid(...v))
+
+
+    if (ms > debugNextPrint) {
+        debugNextPrint += debugNextPrintStep
+        console.log(boids)
+    }
 }
 
 function drawBoid(x, y, vx, vy) {

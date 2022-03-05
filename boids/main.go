@@ -39,7 +39,7 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 			return convertError(err)
 		}
 
-		init(
+		boids := init(
 			args[0].Int(),
 			args[1].Int(),
 		)
@@ -48,7 +48,7 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 			return convertError(err)
 		}
 
-		return nil
+		return boidsOutputToJsFriendly(boids)
 	}
 
 	return updateWrapped, initWrapped
