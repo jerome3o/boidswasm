@@ -9,33 +9,39 @@ type BoidsState struct {
 	Boids [][]float64
 }
 
+func wrap(x, bound float64) float64 {
+	for x < 0 {
+		x += bound
+	}
+	return math.Mod(x, bound)
+}
+
 func updateBoids() (func(t float64) BoidsState, func(h, w int), error) {
 	isInit := false
 	var boidsState BoidsState
+
+	tTotal := 0.0
 
 	var height float64
 	var width float64
 
 	update := func(t float64) BoidsState {
+		tTotal += t
 		if !isInit {
 			return boidsState
 		}
 
-		fmt.Println(width)
-
 		for i, boid := range boidsState.Boids {
-			x, y, a, v := boid[0], boid[1], boid[2], boid[3]
-			a += 1 * t
-			vx, vy := math.Cos(a)*v*t, math.Sin(a)*v*t
+			x, y, _, vy := boid[0], boid[1], boid[2], boid[3]
 
-			x += vx
-			y += vy
-			v = math.Sqrt(math.Pow(vx, 2) + math.Pow(vy, 2))
-			a = math.Atan(vy / vx)
-			boidsState.Boids[i][0] = math.Mod(x, width)
-			boidsState.Boids[i][1] = math.Mod(y, height)
-			boidsState.Boids[i][2] = a
-			boidsState.Boids[i][3] = v
+			vx := math.Sin(tTotal*1+float64(i)) * 100
+			// vy := math.Cos(tTotal*1+float64(i)) * 100
+			x += vx * t
+			y += vy * t
+			boidsState.Boids[i][0] = wrap(x, width)
+			boidsState.Boids[i][1] = wrap(y, height)
+			boidsState.Boids[i][2] = vx
+			boidsState.Boids[i][3] = vy
 		}
 
 		return boidsState
@@ -57,8 +63,8 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int), error) {
 				boidsState.Boids[i*nrows+j] = []float64{
 					float64(100*i) + 50,
 					float64(100*j) + 50,
-					float64(i*j) / 100,
-					1.0,
+					0.0,
+					100.0,
 				}
 			}
 		}

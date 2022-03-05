@@ -32,16 +32,21 @@ function draw() {
     boids.boids.map(v => drawBoid(...v))
 }
 
-function drawBoid(x, y, a, v) {
+function drawBoid(x, y, vx, vy) {
     push()
 
     stroke("black")
 
+    let a = Math.atan(vy/vx)
+    if (vx < 0) {
+        a = a + Math.PI
+    }
+
     translate(x, y)
     rotate(a)
 
-    line(0, 10, 6, -10)
-    line(0, 10, -6, -10)
+    line(10, 0, -10,  6)
+    line(10, 0, -10, -6)
 
     pop()
 }
