@@ -30,7 +30,7 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int), error) {
 
 			x += vx
 			y += vy
-			v = math.Sqrt(math.Pow(x, 2) + math.Pow(y, 2))
+			v = math.Sqrt(math.Pow(vx, 2) + math.Pow(vy, 2))
 			a = math.Atan(vy / vx)
 			boidsState.Boids[i][0] = math.Mod(x, width)
 			boidsState.Boids[i][1] = math.Mod(y, height)
