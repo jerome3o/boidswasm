@@ -29,6 +29,9 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 	dMax := 100.0
 	vMax := 100.0
 
+	sFactor := 1000.0
+	cFactor := 10.0
+
 	update := func(t float64) BoidsState {
 		tTotal += t
 		if !isInit {
@@ -39,11 +42,12 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
 			nearBoids := getNearBoids(x, y, dMax, i, boidsState.Boids)
 
-			ax, ay := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
+			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
+			sax, say := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
 			// sepAX, sepAY := moveTowardNearestBoid(x, y, vx, vy, nearBoids)
 
-			vx = vx + ax
-			vy = vy + ay
+			vx = vx + sFactor*sax + cFactor*cax
+			vy = vy + sFactor*say + cFactor*cay
 
 			s := getDist(0, 0, vx, vy)
 			if s > vMax {
@@ -123,25 +127,26 @@ func calculateSeparationDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (a
 	return ax / float64(len(boids)), ay / float64(len(boids))
 }
 
-// func moveTowardNearestBoid(x, y, vx, vy float64, boids [][]float64) (ax, ay float64) {
+func calculateCohesionDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
 
-// 	if len(boids) == 0 {
-// 		return 0.0, 0.0
-// 	}
+	if len(boids) == 0 {
+		return 0.0, 0.0
+	}
 
-// 	var closestBoid []float64
-// 	lastDist := 1000000.0
+	// TODO(j.swannack): account for wrap - might need w, h to be passed in?
 
-// 	for _, boid := range boids {
-// 		dist := getDist(x, y, boid[0], boid[1])
-// 		if dist < lastDist {
-// 			lastDist = dist
-// 			closestBoid = boid
-// 		}
-// 	}
+	xCentre := 0.0
+	yCentre := 0.0
 
-// 	return closestBoid[0] - x, closestBoid[1] - y
-// }
+	for _, b := range boids {
+		xCentre += (b[0] - x)
+		yCentre += (b[1] - y)
+	}
+	xCentre /= float64(len(boids))
+	yCentre /= float64(len(boids))
+
+	return xCentre, yCentre
+}
 
 func getNearBoids(x, y, dMax float64, iBoid int, boids [][]float64) [][]float64 {
 	output := make([][]float64, 0)
