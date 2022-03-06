@@ -6,8 +6,17 @@ import (
 	"math/rand"
 )
 
+type BoidSettings struct {
+	DistMax          float64
+	VelocityMax      float64
+	SeparationFactor float64
+	CohesionFactor   float64
+	AlignmentFactor  float64
+}
+
 type BoidsState struct {
-	Boids [][]float64
+	Boids    [][]float64
+	Settings BoidSettings
 }
 
 func wrap(x, bound float64) float64 {
@@ -26,14 +35,14 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 	var height float64
 	var width float64
 
-	dMax := 100.0
-	vMax := 300.0
-
-	sFactor := 1.0
-	cFactor := 0.0
-	aFactor := 1.0
-
 	update := func(t float64) BoidsState {
+
+		dMax := boidsState.Settings.DistMax
+		vMax := boidsState.Settings.VelocityMax
+		sFactor := boidsState.Settings.SeparationFactor
+		cFactor := boidsState.Settings.CohesionFactor
+		aFactor := boidsState.Settings.AlignmentFactor
+
 		tTotal += t
 		if !isInit {
 			return boidsState
@@ -43,18 +52,18 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 
 		for i, boid := range boidsState.Boids {
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
-			nearBoids := getNearBoids(x, y, dMax, i, boidsState.Boids)
+			nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
 
 			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
 			sax, say := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
 			aax, aay := calculateAlignmentDeltaV(x, y, vx, vy, vMax, nearBoids)
 
-			vx = vx + sFactor*sax + cFactor*cax + aFactor*aax
-			vy = vy + sFactor*say + cFactor*cay + aFactor*aay
+			vx += sFactor*sax + cFactor*cax + aFactor*aax
+			vy += sFactor*say + cFactor*cay + aFactor*aay
 
 			s := getDist(0, 0, vx, vy)
-			if s > vMax {
-				// if s > 0 {
+			// if s > vMax {
+			if s > 0 {
 				vx *= vMax / s
 				vy *= vMax / s
 			}
@@ -82,6 +91,13 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 		boidsState = BoidsState{}
 
 		boidsState.Boids = make([][]float64, nrows*ncols)
+		boidsState.Settings = BoidSettings{
+			DistMax:          100.0,
+			VelocityMax:      300.0,
+			SeparationFactor: 1.0,
+			CohesionFactor:   1.0,
+			AlignmentFactor:  1.0,
+		}
 
 		for i := 0; i < ncols; i++ {
 			for j := 0; j < nrows; j++ {
@@ -171,14 +187,14 @@ func calculateAlignmentDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax
 	return vxAv, vyAv
 }
 
-func getNearBoids(x, y, dMax float64, iBoid int, boids [][]float64) [][]float64 {
+func getNearBoids(x, y, w, h, dMax float64, iBoid int, boids [][]float64) [][]float64 {
 	output := make([][]float64, 0)
 
 	for i, b := range boids {
 		if i == iBoid {
 			continue
 		}
-		if getDist(x, y, b[0], b[1]) < dMax {
+		if getWrappedDist(x, y, b[0], b[1], w, h) < dMax {
 			// TODO(j.swannack): Check if boid in field of view
 			output = append(output, b)
 		}
@@ -188,4 +204,16 @@ func getNearBoids(x, y, dMax float64, iBoid int, boids [][]float64) [][]float64 
 
 func getDist(x1, y1, x2, y2 float64) float64 {
 	return math.Sqrt(math.Pow(x2-x1, 2) + math.Pow(y2-y1, 2))
+}
+
+func getWrappedDist(x1, y1, x2, y2, w, h float64) float64 {
+	return math.Sqrt(
+		math.Pow(getWrappedDist1d(x1, x2, w), 2) + math.Pow(getWrappedDist1d(y1, y2, h), 2),
+	)
+}
+
+func getWrappedDist1d(v1, v2, bound float64) float64 {
+	// TODO(j.swannack): Calculate distance that accounts for screen wrap
+	// return wrap(v2-v1+bound/2.0, bound) - bound
+	return v2 - v1
 }

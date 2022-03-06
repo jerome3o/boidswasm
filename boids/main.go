@@ -93,5 +93,13 @@ func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 	}
 
 	output["boids"] = boids
+	output["settings"] = map[string]interface{}{
+		"distMax":          boidsOutput.Settings.DistMax,
+		"velocityMax":      boidsOutput.Settings.VelocityMax,
+		"separationFactor": boidsOutput.Settings.SeparationFactor,
+		"cohesionFactor":   boidsOutput.Settings.CohesionFactor,
+		"alignmentFactor":  boidsOutput.Settings.AlignmentFactor,
+	}
+
 	return output
 }
