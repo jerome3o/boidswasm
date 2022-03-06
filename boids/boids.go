@@ -12,6 +12,13 @@ type BoidSettings struct {
 	SeparationFactor float64
 	CohesionFactor   float64
 	AlignmentFactor  float64
+	Height           float64
+	Width            float64
+}
+
+type DebugBoid struct {
+	Index      int
+	Neighbours []int
 }
 
 type BoidsState struct {
@@ -32,9 +39,6 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 
 	tTotal := 0.0
 
-	var height float64
-	var width float64
-
 	update := func(t float64) BoidsState {
 
 		dMax := boidsState.Settings.DistMax
@@ -42,6 +46,8 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 		sFactor := boidsState.Settings.SeparationFactor
 		cFactor := boidsState.Settings.CohesionFactor
 		aFactor := boidsState.Settings.AlignmentFactor
+		height := boidsState.Settings.Height
+		width := boidsState.Settings.Width
 
 		tTotal += t
 		if !isInit {
@@ -84,9 +90,6 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 	init := func(w, h int) BoidsState {
 		fmt.Printf("%v, %v\n", w, h)
 
-		width = float64(w)
-		height = float64(h)
-
 		nrows, ncols := h/100, w/100
 		boidsState = BoidsState{}
 
@@ -94,16 +97,18 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 		boidsState.Settings = BoidSettings{
 			DistMax:          100.0,
 			VelocityMax:      300.0,
-			SeparationFactor: 1.0,
+			SeparationFactor: 10.0,
 			CohesionFactor:   1.0,
 			AlignmentFactor:  1.0,
+			Width:            float64(w),
+			Height:           float64(h),
 		}
 
 		for i := 0; i < ncols; i++ {
 			for j := 0; j < nrows; j++ {
 				boidsState.Boids[i*nrows+j] = []float64{
-					width * rand.Float64(),
-					height * rand.Float64(),
+					boidsState.Settings.Width * rand.Float64(),
+					boidsState.Settings.Height * rand.Float64(),
 					(rand.Float64() - 0.5) * 200,
 					(rand.Float64() - 0.5) * 200,
 				}

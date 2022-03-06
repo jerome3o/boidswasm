@@ -99,6 +99,8 @@ func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 		"separationFactor": boidsOutput.Settings.SeparationFactor,
 		"cohesionFactor":   boidsOutput.Settings.CohesionFactor,
 		"alignmentFactor":  boidsOutput.Settings.AlignmentFactor,
+		"width":            boidsOutput.Settings.Width,
+		"height":           boidsOutput.Settings.Height,
 	}
 
 	return output
