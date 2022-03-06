@@ -27,10 +27,11 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 	var width float64
 
 	dMax := 100.0
-	vMax := 100.0
+	vMax := 300.0
 
-	sFactor := 1000.0
-	cFactor := 10.0
+	sFactor := 1.0
+	cFactor := 0.0
+	aFactor := 1.0
 
 	update := func(t float64) BoidsState {
 		tTotal += t
@@ -38,16 +39,18 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 			return boidsState
 		}
 
+		newBoids := make([][]float64, len(boidsState.Boids))
+
 		for i, boid := range boidsState.Boids {
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
 			nearBoids := getNearBoids(x, y, dMax, i, boidsState.Boids)
 
 			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
 			sax, say := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
-			// sepAX, sepAY := moveTowardNearestBoid(x, y, vx, vy, nearBoids)
+			aax, aay := calculateAlignmentDeltaV(x, y, vx, vy, vMax, nearBoids)
 
-			vx = vx + sFactor*sax + cFactor*cax
-			vy = vy + sFactor*say + cFactor*cay
+			vx = vx + sFactor*sax + cFactor*cax + aFactor*aax
+			vy = vy + sFactor*say + cFactor*cay + aFactor*aay
 
 			s := getDist(0, 0, vx, vy)
 			if s > vMax {
@@ -58,12 +61,14 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 
 			x += vx * t
 			y += vy * t
-			boidsState.Boids[i][0] = wrap(x, width)
-			boidsState.Boids[i][1] = wrap(y, height)
-			boidsState.Boids[i][2] = vx
-			boidsState.Boids[i][3] = vy
+			newBoids[i] = make([]float64, 4)
+			newBoids[i][0] = wrap(x, width)
+			newBoids[i][1] = wrap(y, height)
+			newBoids[i][2] = vx
+			newBoids[i][3] = vy
 		}
 
+		boidsState.Boids = newBoids
 		return boidsState
 	}
 
@@ -81,8 +86,8 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 		for i := 0; i < ncols; i++ {
 			for j := 0; j < nrows; j++ {
 				boidsState.Boids[i*nrows+j] = []float64{
-					width / 10 * rand.Float64(),
-					height / 10 * rand.Float64(),
+					width * rand.Float64(),
+					height * rand.Float64(),
 					(rand.Float64() - 0.5) * 200,
 					(rand.Float64() - 0.5) * 200,
 				}
@@ -118,8 +123,8 @@ func calculateSeparationDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (a
 			dySign = -1.0
 		}
 
-		ax += math.Min(maxV/math.Max(math.Abs(dx), 1), maxV) * dxSign
-		ay += math.Min(maxV/math.Max(math.Abs(dy), 1), maxV) * dySign
+		ax += math.Min(maxV/math.Max(math.Abs(dx), 1), 2*maxV) * dxSign
+		ay += math.Min(maxV/math.Max(math.Abs(dy), 1), 2*maxV) * dySign
 	}
 
 	// fmt.Println(ax, ay)
@@ -128,15 +133,14 @@ func calculateSeparationDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (a
 }
 
 func calculateCohesionDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
-
-	if len(boids) == 0 {
-		return 0.0, 0.0
-	}
-
 	// TODO(j.swannack): account for wrap - might need w, h to be passed in?
 
 	xCentre := 0.0
 	yCentre := 0.0
+
+	if len(boids) == 0 {
+		return xCentre, yCentre
+	}
 
 	for _, b := range boids {
 		xCentre += (b[0] - x)
@@ -146,6 +150,25 @@ func calculateCohesionDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax,
 	yCentre /= float64(len(boids))
 
 	return xCentre, yCentre
+}
+
+func calculateAlignmentDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
+
+	vxAv := 0.0
+	vyAv := 0.0
+
+	if len(boids) == 0 {
+		return vxAv, vyAv
+	}
+
+	for _, b := range boids {
+		vxAv += b[2]
+		vyAv += b[3]
+	}
+	vxAv /= float64(len(boids))
+	vyAv /= float64(len(boids))
+
+	return vxAv, vyAv
 }
 
 func getNearBoids(x, y, dMax float64, iBoid int, boids [][]float64) [][]float64 {

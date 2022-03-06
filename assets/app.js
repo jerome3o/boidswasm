@@ -54,8 +54,8 @@ function drawBoid(x, y, vx, vy) {
     translate(x, y)
     rotate(a)
 
-    line(10, 0, -10,  6)
-    line(10, 0, -10, -6)
+    line(5, 0, -5,  6)
+    line(5, 0, -5, -6)
 
     pop()
 }
