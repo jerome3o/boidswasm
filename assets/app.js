@@ -34,11 +34,31 @@ function draw() {
     background(255)
     boids.boids.map(v => drawBoid(...v))
 
+    drawDebugBoid(
+        boids.boids[boids.debugBoid.index],
+        boids.debugBoid.neighbours.map(i => boids.boids[i]),
+        boids.settings,
+    )
+
 
     if (ms > debugNextPrint) {
         debugNextPrint += debugNextPrintStep
         console.log(boids)
     }
+}
+
+function drawDebugBoid(boid, neighbours, settings) {
+    push()
+    stroke("purple")
+    fill(0,0,0,0)
+    strokeWeight(1)
+    circle(boid[0], boid[1], 20)
+    circle(boid[0], boid[1], settings.distMax*2)
+
+    strokeWeight(2)
+    neighbours.map(b => circle(b[0], b[1], 20))
+
+    pop()
 }
 
 function drawBoid(x, y, vx, vy) {
