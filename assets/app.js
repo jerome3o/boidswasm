@@ -34,11 +34,12 @@ function draw() {
     background(255)
     boids.boids.map(v => drawBoid(...v))
 
-    drawDebugBoid(
-        boids.boids[boids.debugBoid.index],
-        boids.debugBoid.neighbours.map(i => boids.boids[i]),
+    boids.debugBoids.map(db => drawDebugBoid(
+        boids.boids[db.index],
+        db.neighbours.map(i => boids.boids[i]),
         boids.settings,
-    )
+    ))
+    
 
 
     if (ms > debugNextPrint) {

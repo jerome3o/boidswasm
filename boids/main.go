@@ -103,15 +103,21 @@ func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 		"height":           boidsOutput.Settings.Height,
 	}
 
-	neighbours := make([]interface{}, len(boidsOutput.DebugBoid.Neighbours))
-	for i, v := range boidsOutput.DebugBoid.Neighbours {
-		neighbours[i] = v
-	}
+	debugBoids := make([]interface{}, len(boidsOutput.DebugBoids))
 
-	output["debugBoid"] = map[string]interface{}{
-		"index":      boidsOutput.DebugBoid.Index,
-		"neighbours": neighbours,
+	for i, debugBoid := range boidsOutput.DebugBoids {
+
+		neighbours := make([]interface{}, len(debugBoid.Neighbours))
+		for ii, v := range debugBoid.Neighbours {
+			neighbours[ii] = v
+		}
+
+		debugBoids[i] = map[string]interface{}{
+			"index":      debugBoid.Index,
+			"neighbours": neighbours,
+		}
 	}
+	output["debugBoids"] = debugBoids
 
 	return output
 }

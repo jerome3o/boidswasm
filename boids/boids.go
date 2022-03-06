@@ -22,9 +22,9 @@ type DebugBoid struct {
 }
 
 type BoidsState struct {
-	Boids     [][]float64
-	Settings  BoidSettings
-	DebugBoid DebugBoid
+	Boids      [][]float64
+	Settings   BoidSettings
+	DebugBoids []DebugBoid
 }
 
 func wrap(x, bound float64) float64 {
@@ -61,8 +61,10 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
 			nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
 
-			if i == boidsState.DebugBoid.Index {
-				boidsState.DebugBoid.Neighbours = nearBoidIndices
+			for ii, debugBoid := range boidsState.DebugBoids {
+				if i == debugBoid.Index {
+					boidsState.DebugBoids[ii].Neighbours = nearBoidIndices
+				}
 			}
 
 			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
@@ -120,9 +122,15 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 			}
 		}
 
-		boidsState.DebugBoid = DebugBoid{
-			Index:      0,
-			Neighbours: []int{},
+		boidsState.DebugBoids = []DebugBoid{
+			{
+				Index:      0,
+				Neighbours: []int{},
+			},
+			{
+				Index:      2,
+				Neighbours: []int{},
+			},
 		}
 
 		isInit = true
