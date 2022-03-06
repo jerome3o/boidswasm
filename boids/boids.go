@@ -22,8 +22,9 @@ type DebugBoid struct {
 }
 
 type BoidsState struct {
-	Boids    [][]float64
-	Settings BoidSettings
+	Boids     [][]float64
+	Settings  BoidSettings
+	DebugBoid DebugBoid
 }
 
 func wrap(x, bound float64) float64 {
@@ -58,7 +59,11 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 
 		for i, boid := range boidsState.Boids {
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
-			nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
+			nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
+
+			if i == boidsState.DebugBoid.Index {
+				boidsState.DebugBoid.Neighbours = nearBoidIndices
+			}
 
 			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
 			sax, say := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
@@ -113,6 +118,11 @@ func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error
 					(rand.Float64() - 0.5) * 200,
 				}
 			}
+		}
+
+		boidsState.DebugBoid = DebugBoid{
+			Index:      0,
+			Neighbours: []int{},
 		}
 
 		isInit = true
@@ -192,8 +202,9 @@ func calculateAlignmentDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax
 	return vxAv, vyAv
 }
 
-func getNearBoids(x, y, w, h, dMax float64, iBoid int, boids [][]float64) [][]float64 {
+func getNearBoids(x, y, w, h, dMax float64, iBoid int, boids [][]float64) ([]int, [][]float64) {
 	output := make([][]float64, 0)
+	indices := make([]int, 0)
 
 	for i, b := range boids {
 		if i == iBoid {
@@ -202,9 +213,10 @@ func getNearBoids(x, y, w, h, dMax float64, iBoid int, boids [][]float64) [][]fl
 		if getWrappedDist(x, y, b[0], b[1], w, h) < dMax {
 			// TODO(j.swannack): Check if boid in field of view
 			output = append(output, b)
+			indices = append(indices, i)
 		}
 	}
-	return output
+	return indices, output
 }
 
 func getDist(x1, y1, x2, y2 float64) float64 {
