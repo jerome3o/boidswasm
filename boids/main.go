@@ -25,7 +25,7 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 			return convertError(err)
 		}
 
-		boids := boidsF(args[0].Float())
+		boids := boidsF(jsUpdateRequestToGo(args[0]))
 
 		if err != nil {
 			return convertError(err)
@@ -119,5 +119,11 @@ func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 	}
 	output["debugBoids"] = debugBoids
 
+	return output
+}
+
+func jsUpdateRequestToGo(jsv js.Value) BoidsUpdateRequest {
+	output := BoidsUpdateRequest{}
+	output.TimeStep = jsv.Get("timeStep").Float()
 	return output
 }

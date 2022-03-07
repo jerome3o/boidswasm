@@ -30,7 +30,7 @@ function draw() {
     timeStep = (ms - lastMs) / 1000
     lastMs = ms
 
-    boids = updateBoids(timeStep)
+    boids = updateBoids({timeStep})
     background(255)
     boids.boids.map(v => drawBoid(...v))
 

@@ -27,6 +27,10 @@ type BoidsState struct {
 	DebugBoids []DebugBoid
 }
 
+type BoidsUpdateRequest struct {
+	TimeStep float64
+}
+
 func wrap(x, bound float64) float64 {
 	for x < 0 {
 		x += bound
@@ -34,14 +38,15 @@ func wrap(x, bound float64) float64 {
 	return math.Mod(x, bound)
 }
 
-func updateBoids() (func(t float64) BoidsState, func(h, w int) BoidsState, error) {
+func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
 	isInit := false
 	var boidsState BoidsState
 
 	tTotal := 0.0
 
-	update := func(t float64) BoidsState {
+	update := func(update BoidsUpdateRequest) BoidsState {
 
+		t := update.TimeStep
 		dMax := boidsState.Settings.DistMax
 		vMax := boidsState.Settings.VelocityMax
 		sFactor := boidsState.Settings.SeparationFactor
