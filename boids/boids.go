@@ -29,6 +29,7 @@ type BoidsState struct {
 
 type BoidsUpdateRequest struct {
 	TimeStep float64
+	Settings BoidSettings
 }
 
 func wrap(x, bound float64) float64 {

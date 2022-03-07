@@ -122,8 +122,25 @@ func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 	return output
 }
 
+func jsSettingsToGo(jsv js.Value) BoidSettings {
+	if jsv.IsUndefined() {
+		return BoidSettings{}
+	}
+
+	return BoidSettings{
+		DistMax:          jsv.Get("distMax").Float(),
+		VelocityMax:      jsv.Get("velocityMax").Float(),
+		SeparationFactor: jsv.Get("separationFactor").Float(),
+		CohesionFactor:   jsv.Get("cohesionFactor").Float(),
+		AlignmentFactor:  jsv.Get("alignmentFactor").Float(),
+		Height:           jsv.Get("height").Float(),
+		Width:            jsv.Get("width").Float(),
+	}
+}
+
 func jsUpdateRequestToGo(jsv js.Value) BoidsUpdateRequest {
 	output := BoidsUpdateRequest{}
 	output.TimeStep = jsv.Get("timeStep").Float()
+	output.Settings = jsSettingsToGo(jsv.Get("settings"))
 	return output
 }
