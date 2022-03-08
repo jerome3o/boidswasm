@@ -93,15 +93,11 @@ func boidsOutputToJsFriendly(boidsOutput BoidsState) map[string]interface{} {
 	}
 
 	output["boids"] = boids
-	output["settings"] = map[string]interface{}{
-		"distMax":          boidsOutput.Settings.DistMax,
-		"velocityMax":      boidsOutput.Settings.VelocityMax,
-		"separationFactor": boidsOutput.Settings.SeparationFactor,
-		"cohesionFactor":   boidsOutput.Settings.CohesionFactor,
-		"alignmentFactor":  boidsOutput.Settings.AlignmentFactor,
-		"width":            boidsOutput.Settings.Width,
-		"height":           boidsOutput.Settings.Height,
+	settings := make(map[string]interface{})
+	for k := range boidsOutput.Settings {
+		settings[k] = boidsOutput.Settings[k]
 	}
+	output["settings"] = settings
 
 	debugBoids := make([]interface{}, len(boidsOutput.DebugBoids))
 
@@ -126,16 +122,7 @@ func jsSettingsToGo(jsv js.Value) BoidSettings {
 	if jsv.IsUndefined() {
 		return BoidSettings{}
 	}
-
-	return BoidSettings{
-		DistMax:          jsv.Get("distMax").Float(),
-		VelocityMax:      jsv.Get("velocityMax").Float(),
-		SeparationFactor: jsv.Get("separationFactor").Float(),
-		CohesionFactor:   jsv.Get("cohesionFactor").Float(),
-		AlignmentFactor:  jsv.Get("alignmentFactor").Float(),
-		Height:           jsv.Get("height").Float(),
-		Width:            jsv.Get("width").Float(),
-	}
+	// TODO(j.swannack): finish this function
 }
 
 func jsUpdateRequestToGo(jsv js.Value) BoidsUpdateRequest {

@@ -6,15 +6,7 @@ import (
 	"math/rand"
 )
 
-type BoidSettings struct {
-	DistMax          float64
-	VelocityMax      float64
-	SeparationFactor float64
-	CohesionFactor   float64
-	AlignmentFactor  float64
-	Height           float64
-	Width            float64
-}
+type BoidSettings map[string]float64
 
 type DebugBoid struct {
 	Index      int
@@ -32,6 +24,16 @@ type BoidsUpdateRequest struct {
 	Settings BoidSettings
 }
 
+var defaultSettings BoidSettings = map[string]float64{
+	"distMax":          100.0,
+	"velocityMax":      300.0,
+	"separationFactor": 10.0,
+	"cohesionFactor":   1.0,
+	"alignmentFactor":  1.0,
+	"width":            1000.0,
+	"height":           1000.0,
+}
+
 func wrap(x, bound float64) float64 {
 	for x < 0 {
 		x += bound
@@ -45,16 +47,20 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 
 	tTotal := 0.0
 
-	update := func(update BoidsUpdateRequest) BoidsState {
+	update := func(updateReq BoidsUpdateRequest) BoidsState {
 
-		t := update.TimeStep
-		dMax := boidsState.Settings.DistMax
-		vMax := boidsState.Settings.VelocityMax
-		sFactor := boidsState.Settings.SeparationFactor
-		cFactor := boidsState.Settings.CohesionFactor
-		aFactor := boidsState.Settings.AlignmentFactor
-		height := boidsState.Settings.Height
-		width := boidsState.Settings.Width
+		for k, v := range updateReq.Settings {
+			boidsState.Settings[k] = v
+		}
+
+		t := updateReq.TimeStep
+		dMax := boidsState.Settings["distMax"]
+		vMax := boidsState.Settings["velocityMax"]
+		sFactor := boidsState.Settings["separationFactor"]
+		cFactor := boidsState.Settings["cohesionFactor"]
+		aFactor := boidsState.Settings["alignmentFactor"]
+		height := boidsState.Settings["height"]
+		width := boidsState.Settings["width"]
 
 		tTotal += t
 		if !isInit {
@@ -108,20 +114,20 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 
 		boidsState.Boids = make([][]float64, nrows*ncols)
 		boidsState.Settings = BoidSettings{
-			DistMax:          100.0,
-			VelocityMax:      300.0,
-			SeparationFactor: 10.0,
-			CohesionFactor:   1.0,
-			AlignmentFactor:  1.0,
-			Width:            float64(w),
-			Height:           float64(h),
+			"distMax":          100.0,
+			"velocityMax":      300.0,
+			"separationFactor": 10.0,
+			"cohesionFactor":   1.0,
+			"alignmentFactor":  1.0,
+			"width":            float64(w),
+			"height":           float64(h),
 		}
 
 		for i := 0; i < ncols; i++ {
 			for j := 0; j < nrows; j++ {
 				boidsState.Boids[i*nrows+j] = []float64{
-					boidsState.Settings.Width * rand.Float64(),
-					boidsState.Settings.Height * rand.Float64(),
+					boidsState.Settings["width"] * rand.Float64(),
+					boidsState.Settings["height"] * rand.Float64(),
 					(rand.Float64() - 0.5) * 200,
 					(rand.Float64() - 0.5) * 200,
 				}
