@@ -33,7 +33,7 @@ function draw() {
     boids = updateBoids({
         timeStep,
         settings: {
-            "distMax": 4.0
+            "distMax": 300.0
         }
     })
     background(255)

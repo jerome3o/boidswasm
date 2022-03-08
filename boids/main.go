@@ -122,7 +122,14 @@ func jsSettingsToGo(jsv js.Value) BoidSettings {
 	if jsv.IsUndefined() {
 		return BoidSettings{}
 	}
-	// TODO(j.swannack): finish this function
+	output := make(BoidSettings)
+
+	for k := range defaultSettings {
+		if !jsv.Get(k).IsUndefined() {
+			output[k] = jsv.Get(k).Float()
+		}
+	}
+	return output
 }
 
 func jsUpdateRequestToGo(jsv js.Value) BoidsUpdateRequest {
