@@ -79,6 +79,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 				}
 			}
 
+			// TODO(j.swannack): these guys need a good debug - they get overly grouped
 			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
 			sax, say := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
 			aax, aay := calculateAlignmentDeltaV(x, y, vx, vy, vMax, nearBoids)
