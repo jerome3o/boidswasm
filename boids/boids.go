@@ -76,8 +76,6 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			return boidsState
 		}
 
-		fmt.Println(fFactor, mouseX, mouseY)
-
 		newBoids := make([][]float64, len(boidsState.Boids))
 
 		for i, boid := range boidsState.Boids {
@@ -240,8 +238,8 @@ func calculateFearDeltaV(x, y, mouseX, mouseY, width, height, vMax float64, boid
 		return 0.0, 0.0
 	}
 
-	ax = 100 / getWrappedDist1d(mouseX, x, width)
-	ay = 100 / getWrappedDist1d(mouseY, y, height)
+	ax = getWrappedDist1d(mouseX, x, width)
+	ay = getWrappedDist1d(mouseY, y, height)
 
 	return ax, ay
 }

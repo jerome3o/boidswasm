@@ -60,7 +60,7 @@ let sliderSpec = [
         settingKey: "fearFactor",
         min: 0,
         max: 100,
-        default: 1.0
+        default: 50.0
     },
 ]
 let sliders = {}
