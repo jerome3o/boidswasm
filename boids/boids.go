@@ -80,9 +80,9 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			}
 
 			// TODO(j.swannack): these guys need a good debug - they get overly grouped
-			cax, cay := calculateCohesionDeltaV(x, y, vx, vy, vMax, nearBoids)
-			sax, say := calculateSeparationDeltaV(x, y, vx, vy, vMax, nearBoids)
-			aax, aay := calculateAlignmentDeltaV(x, y, vx, vy, vMax, nearBoids)
+			cax, cay := calculateCohesionDeltaV(x, y, width, height, vMax, nearBoids)
+			sax, say := calculateSeparationDeltaV(x, y, width, height, vMax, nearBoids)
+			aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
 
 			vx += sFactor*sax + cFactor*cax + aFactor*aax
 			vy += sFactor*say + cFactor*cay + aFactor*aay
@@ -150,7 +150,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 
 }
 
-func calculateSeparationDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
+func calculateSeparationDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, ay float64) {
 
 	if len(boids) == 0 {
 		return 0.0, 0.0
@@ -180,7 +180,7 @@ func calculateSeparationDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (a
 	return ax / float64(len(boids)), ay / float64(len(boids))
 }
 
-func calculateCohesionDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
+func calculateCohesionDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, ay float64) {
 	// TODO(j.swannack): account for wrap - might need w, h to be passed in?
 
 	xCentre := 0.0
@@ -200,7 +200,7 @@ func calculateCohesionDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax,
 	return xCentre, yCentre
 }
 
-func calculateAlignmentDeltaV(x, y, vx, vy, maxV float64, boids [][]float64) (ax, ay float64) {
+func calculateAlignmentDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, ay float64) {
 
 	vxAv := 0.0
 	vyAv := 0.0
@@ -249,6 +249,14 @@ func getWrappedDist(x1, y1, x2, y2, w, h float64) float64 {
 func getWrappedDist1d(v1, v2, bound float64) float64 {
 	// TODO(j.swannack): Calculate distance that accounts for screen wrap
 	// return wrap(v2-v1+bound/2.0, bound) - bound
-	// return math.Mod(v2-v1, bound/2)
-	return v2 - v1
+
+	dist := v2 - v1
+	if math.Abs(dist) > bound/2 {
+		if dist < 0 {
+			return dist + bound
+		} else {
+			return dist - bound
+		}
+	}
+	return dist
 }
