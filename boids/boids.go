@@ -81,7 +81,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 
 			// TODO(j.swannack): these guys need a good debug - they get overly grouped
 			cax, cay := calculateCohesionDeltaV(x, y, width, height, vMax, nearBoids)
-			sax, say := calculateSeparationDeltaV(x, y, width, height, vMax, nearBoids)
+			sax, say := calculateSeparationDeltaV(x, y, width, height, dMax, nearBoids)
 			aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
 
 			vx += sFactor*sax + cFactor*cax + aFactor*aax
@@ -150,7 +150,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 
 }
 
-func calculateSeparationDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, ay float64) {
+func calculateSeparationDeltaV(x, y, w, h, distMax float64, boids [][]float64) (ax, ay float64) {
 
 	if len(boids) == 0 {
 		return 0.0, 0.0
@@ -171,13 +171,13 @@ func calculateSeparationDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax,
 			dySign = -1.0
 		}
 
-		ax += math.Min(maxV/math.Max(math.Abs(dx), 1), 2*maxV) * dxSign
-		ay += math.Min(maxV/math.Max(math.Abs(dy), 1), 2*maxV) * dySign
+		ax += math.Min(distMax/math.Max(math.Abs(dx), 1), 2*distMax) * dxSign
+		ay += math.Min(distMax/math.Max(math.Abs(dy), 1), 2*distMax) * dySign
 	}
 
 	// fmt.Println(ax, ay)
 
-	return ax / float64(len(boids)), ay / float64(len(boids))
+	return ax, ay
 }
 
 func calculateCohesionDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, ay float64) {
