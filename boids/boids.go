@@ -30,6 +30,7 @@ var defaultSettings BoidSettings = map[string]float64{
 	"separationFactor": 10.0,
 	"cohesionFactor":   1.0,
 	"alignmentFactor":  1.0,
+	"randomFactor":     1.0,
 	"width":            1000.0,
 	"height":           1000.0,
 }
@@ -59,6 +60,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 		sFactor := boidsState.Settings["separationFactor"]
 		cFactor := boidsState.Settings["cohesionFactor"]
 		aFactor := boidsState.Settings["alignmentFactor"]
+		rFactor := boidsState.Settings["randomFactor"]
 		height := boidsState.Settings["height"]
 		width := boidsState.Settings["width"]
 
@@ -70,7 +72,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 		newBoids := make([][]float64, len(boidsState.Boids))
 
 		for i, boid := range boidsState.Boids {
-			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
+			x, y := boid[0], boid[1]
 			nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
 
 			for ii, debugBoid := range boidsState.DebugBoids {
@@ -84,8 +86,12 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			sax, say := calculateSeparationDeltaV(x, y, width, height, dMax, nearBoids)
 			aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
 
-			vx = sFactor*sax + cFactor*cax + aFactor*aax
-			vy = sFactor*say + cFactor*cay + aFactor*aay
+			// TODO(j.swannack): Think more about this
+			rax, ray := math.Sin(float64(i)+tTotal), math.Cos(float64(i)+tTotal)
+			fmt.Println(rax, ray)
+
+			vx := sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax
+			vy := sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray
 
 			s := getDist(0, 0, vx, vy)
 			// if s > vMax {
