@@ -79,7 +79,7 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 		newBoids := make([][]float64, len(boidsState.Boids))
 
 		for i, boid := range boidsState.Boids {
-			x, y := boid[0], boid[1]
+			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
 			nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
 
 			for ii, debugBoid := range boidsState.DebugBoids {
@@ -97,8 +97,8 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			// TODO(j.swannack): Think more about this
 			rax, ray := math.Sin(float64(i)+tTotal), math.Cos(float64(i)+tTotal)
 
-			vx := sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax + fFactor*fax
-			vy := sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray + fFactor*fay
+			vx = sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax + fFactor*fax + 0.25*vx
+			vy = sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray + fFactor*fay + 0.25*vy
 
 			s := getDist(0, 0, vx, vy)
 			if s > 0 {
