@@ -22,6 +22,8 @@ type BoidsState struct {
 type BoidsUpdateRequest struct {
 	TimeStep float64
 	Settings BoidSettings
+	MouseX   float64
+	MouseY   float64
 }
 
 var defaultSettings BoidSettings = map[string]float64{
@@ -31,6 +33,7 @@ var defaultSettings BoidSettings = map[string]float64{
 	"cohesionFactor":   1.0,
 	"alignmentFactor":  1.0,
 	"randomFactor":     1.0,
+	"fearFactor":       1.0,
 	"width":            1000.0,
 	"height":           1000.0,
 }
@@ -61,13 +64,19 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 		cFactor := boidsState.Settings["cohesionFactor"]
 		aFactor := boidsState.Settings["alignmentFactor"]
 		rFactor := boidsState.Settings["randomFactor"]
+		fFactor := boidsState.Settings["fearFactor"]
 		height := boidsState.Settings["height"]
 		width := boidsState.Settings["width"]
+
+		mouseX := updateReq.MouseX
+		mouseY := updateReq.MouseY
 
 		tTotal += t
 		if !isInit {
 			return boidsState
 		}
+
+		fmt.Println(fFactor, mouseX, mouseY)
 
 		newBoids := make([][]float64, len(boidsState.Boids))
 
@@ -85,16 +94,15 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			cax, cay := calculateCohesionDeltaV(x, y, width, height, vMax, nearBoids)
 			sax, say := calculateSeparationDeltaV(x, y, width, height, dMax, nearBoids)
 			aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
+			fax, fay := calculateFearDeltaV(x, y, mouseX, mouseY, width, height, vMax, nearBoids)
 
 			// TODO(j.swannack): Think more about this
 			rax, ray := math.Sin(float64(i)+tTotal), math.Cos(float64(i)+tTotal)
-			fmt.Println(rax, ray)
 
-			vx := sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax
-			vy := sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray
+			vx := sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax + fFactor*fax
+			vy := sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray + fFactor*fay
 
 			s := getDist(0, 0, vx, vy)
-			// if s > vMax {
 			if s > 0 {
 				vx *= vMax / s
 				vy *= vMax / s
@@ -126,6 +134,8 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			"separationFactor": 3.0,
 			"cohesionFactor":   1.0,
 			"alignmentFactor":  3.0,
+			"randomFactor":     1.0,
+			"fearFactor":       1.0,
 			"width":            float64(w),
 			"height":           float64(h),
 		}
@@ -181,13 +191,10 @@ func calculateSeparationDeltaV(x, y, w, h, distMax float64, boids [][]float64) (
 		ay += math.Min(distMax/math.Max(math.Abs(dy), 1), 2*distMax) * dySign
 	}
 
-	// fmt.Println(ax, ay)
-
 	return ax, ay
 }
 
 func calculateCohesionDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, ay float64) {
-	// TODO(j.swannack): account for wrap - might need w, h to be passed in?
 
 	xCentre := 0.0
 	yCentre := 0.0
@@ -223,6 +230,20 @@ func calculateAlignmentDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, 
 	vyAv /= float64(len(boids)) * 10
 
 	return vxAv, vyAv
+}
+
+func calculateFearDeltaV(x, y, mouseX, mouseY, width, height, vMax float64, boids [][]float64) (ax, ay float64) {
+
+	dist := getWrappedDist(x, y, mouseX, mouseY, width, height)
+
+	if dist > 100 {
+		return 0.0, 0.0
+	}
+
+	ax = 100 / getWrappedDist1d(mouseX, x, width)
+	ay = 100 / getWrappedDist1d(mouseY, y, height)
+
+	return ax, ay
 }
 
 func getNearBoids(x, y, w, h, dMax float64, iBoid int, boids [][]float64) ([]int, [][]float64) {

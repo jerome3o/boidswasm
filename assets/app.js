@@ -55,6 +55,13 @@ let sliderSpec = [
         max: 100,
         default: 1.0
     },
+    {
+        title: "Fear of Mouse",
+        settingKey: "fearFactor",
+        min: 0,
+        max: 100,
+        default: 1.0
+    },
 ]
 let sliders = {}
 
@@ -81,8 +88,6 @@ function setup() {
 
 function createSlider(title, index){
 
-    let spacing = 20
-
     let slider = createSlider(0, 800, 50, 1)
     slider.position(20, sliderSpacing*(index+1))
     slider.style('width', '200px');
@@ -108,6 +113,8 @@ function draw() {
     boids = updateBoids({
         timeStep,
         settings,
+        mouseX,
+        mouseY,
     })
     background(255)
     boids.boids.map(v => drawBoid(...v))

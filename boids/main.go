@@ -136,5 +136,7 @@ func jsUpdateRequestToGo(jsv js.Value) BoidsUpdateRequest {
 	output := BoidsUpdateRequest{}
 	output.TimeStep = jsv.Get("timeStep").Float()
 	output.Settings = jsSettingsToGo(jsv.Get("settings"))
+	output.MouseX = jsv.Get("mouseX").Float()
+	output.MouseY = jsv.Get("mouseY").Float()
 	return output
 }
