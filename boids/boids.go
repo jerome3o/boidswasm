@@ -159,8 +159,8 @@ func calculateSeparationDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax,
 	ax, ay = 0.0, 0.0
 	for _, b := range boids {
 
-		dx := x - b[0]
-		dy := y - b[1]
+		dx := getWrappedDist1d(b[0], x, w)
+		dy := getWrappedDist1d(b[1], y, h)
 
 		dxSign := 1.0
 		if dx < 0 {
@@ -191,8 +191,8 @@ func calculateCohesionDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, a
 	}
 
 	for _, b := range boids {
-		xCentre += (b[0] - x)
-		yCentre += (b[1] - y)
+		xCentre += getWrappedDist1d(x, b[0], w)
+		yCentre += getWrappedDist1d(y, b[1], h)
 	}
 	xCentre /= float64(len(boids))
 	yCentre /= float64(len(boids))
@@ -213,8 +213,8 @@ func calculateAlignmentDeltaV(x, y, w, h, maxV float64, boids [][]float64) (ax, 
 		vxAv += b[2]
 		vyAv += b[3]
 	}
-	vxAv /= float64(len(boids))
-	vyAv /= float64(len(boids))
+	vxAv /= float64(len(boids)) * 10
+	vyAv /= float64(len(boids)) * 10
 
 	return vxAv, vyAv
 }
