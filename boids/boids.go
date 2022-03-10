@@ -84,8 +84,8 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			sax, say := calculateSeparationDeltaV(x, y, width, height, dMax, nearBoids)
 			aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
 
-			vx += sFactor*sax + cFactor*cax + aFactor*aax
-			vy += sFactor*say + cFactor*cay + aFactor*aay
+			vx = sFactor*sax + cFactor*cax + aFactor*aax
+			vy = sFactor*say + cFactor*cay + aFactor*aay
 
 			s := getDist(0, 0, vx, vy)
 			// if s > vMax {
@@ -110,16 +110,16 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 	init := func(w, h int) BoidsState {
 		fmt.Printf("%v, %v\n", w, h)
 
-		nrows, ncols := h/100, w/100
+		nrows, ncols := h/80, w/80
 		boidsState = BoidsState{}
 
 		boidsState.Boids = make([][]float64, nrows*ncols)
 		boidsState.Settings = BoidSettings{
-			"distMax":          100.0,
-			"velocityMax":      300.0,
-			"separationFactor": 10.0,
+			"distMax":          50.0,
+			"velocityMax":      200.0,
+			"separationFactor": 3.0,
 			"cohesionFactor":   1.0,
-			"alignmentFactor":  1.0,
+			"alignmentFactor":  3.0,
 			"width":            float64(w),
 			"height":           float64(h),
 		}

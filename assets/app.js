@@ -18,21 +18,21 @@ let sliderSpec = [
         settingKey: "distMax",
         min: 0,
         max: 600,
-        default: 200.0
+        default: 50.0
     },
     {
         title: "Maximum Velocity",
         settingKey: "velocityMax",
         min: 0,
         max: 1000,
-        default: 300.0
+        default: 200.0
     },
     {
         title: "Separation",
         settingKey: "separationFactor",
         min: 0,
         max: 50,
-        default: 10.0
+        default: 3.0
     },
     {
         title: "Cohesion",
@@ -46,7 +46,7 @@ let sliderSpec = [
         settingKey: "alignmentFactor",
         min: 0,
         max: 10,
-        default: 1.0
+        default: 3.0
     },
 ]
 let sliders = {}
@@ -126,7 +126,7 @@ function drawSliderText() {
     for (let i = 0; i < sliderSpec.length; i++) {
         let spec = sliderSpec[i]
         let slider = sliders[spec.settingKey]
-        text(spec.title, slider.x + slider.width + 10, sliderSpacing*(i+1) + 15);
+        text(`${spec.title}: ${slider.value()}`, slider.x + slider.width + 10, sliderSpacing*(i+1) + 15);
     }
     pop()
 }
@@ -174,8 +174,8 @@ function drawBoid(x, y, vx, vy) {
     translate(x, y)
     rotate(a)
 
-    line(5, 0, -5,  6)
-    line(5, 0, -5, -6)
+    line(3, 0, -3,  3)
+    line(3, 0, -3, -3)
 
     pop()
 }
