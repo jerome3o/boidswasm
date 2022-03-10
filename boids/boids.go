@@ -140,10 +140,6 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 				Index:      0,
 				Neighbours: []int{},
 			},
-			{
-				Index:      2,
-				Neighbours: []int{},
-			},
 		}
 
 		isInit = true
@@ -253,5 +249,6 @@ func getWrappedDist(x1, y1, x2, y2, w, h float64) float64 {
 func getWrappedDist1d(v1, v2, bound float64) float64 {
 	// TODO(j.swannack): Calculate distance that accounts for screen wrap
 	// return wrap(v2-v1+bound/2.0, bound) - bound
+	// return math.Mod(v2-v1, bound/2)
 	return v2 - v1
 }

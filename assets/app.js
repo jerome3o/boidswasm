@@ -139,6 +139,22 @@ function drawDebugBoid(boid, neighbours, settings) {
     circle(boid[0], boid[1], 20)
     circle(boid[0], boid[1], settings.distMax*2)
 
+    if (boid[0] < settings.distMax) {
+        circle(boid[0] + settings.width, boid[1], settings.distMax*2)
+    }
+
+    if (boid[0] + settings.distMax > settings.width) {
+        circle(boid[0] - settings.width, boid[1], settings.distMax*2)
+    }
+
+    if (boid[1] < settings.distMax) {
+        circle(boid[0], boid[1] + settings.height, settings.distMax*2)
+    }
+
+    if (boid[1] + settings.distMax > settings.height) {
+        circle(boid[0], boid[1] - settings.height, settings.distMax*2)
+    }
+
     strokeWeight(1)
     neighbours.map(b => circle(b[0], b[1], 20))
 
