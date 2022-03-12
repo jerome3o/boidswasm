@@ -7,7 +7,9 @@ let lastMs = 0.0
 
 let debugNextPrint = 1000
 let debugNextPrintStep = 100000
-
+let cumulativeDrawTime = 0.0
+let nFramesToAverage = 10
+let iFrame = 0
 
 let sliderSpacing = 35
 let sliderWidth = 200
@@ -96,6 +98,7 @@ function createSlider(title, index){
 }
 
 function draw() {
+    iFrame += 1;
 
     if (!boidsInitialised) {
         return
@@ -131,6 +134,12 @@ function draw() {
     }
 
     drawSliderText()
+
+    cumulativeDrawTime += millis() - ms
+    if (iFrame % nFramesToAverage == 0) {
+        console.log(`Average frame calculate and draw time: ${cumulativeDrawTime / nFramesToAverage}`)
+        cumulativeDrawTime = 0
+    }
 }
 
 function drawSliderText() {

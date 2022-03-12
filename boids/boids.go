@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"runtime"
+	"time"
 )
 
 type BoidSettings map[string]float64
@@ -38,6 +40,8 @@ var defaultSettings BoidSettings = map[string]float64{
 	"height":           1000.0,
 }
 
+var NFramesToAverage int = 10
+
 func wrap(x, bound float64) float64 {
 	for x < 0 {
 		x += bound
@@ -45,13 +49,18 @@ func wrap(x, bound float64) float64 {
 	return math.Mod(x, bound)
 }
 
-func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
+func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
 	isInit := false
 	var boidsState BoidsState
+
+	iFrame := 0
+	var cumulativeFrameTime int64 = 0
 
 	tTotal := 0.0
 
 	update := func(updateReq BoidsUpdateRequest) BoidsState {
+		iFrame += 1
+		tStart := time.Now().UnixMilli()
 
 		for k, v := range updateReq.Settings {
 			boidsState.Settings[k] = v
@@ -116,16 +125,26 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 		}
 
 		boidsState.Boids = newBoids
+
+		cumulativeFrameTime += time.Now().UnixMilli() - tStart
+
+		if (iFrame % NFramesToAverage) == 0 {
+			fmt.Printf("Average inner calculation time: %vms\n", float64(cumulativeFrameTime)/float64(NFramesToAverage))
+			cumulativeFrameTime = 0
+		}
+
 		return boidsState
 	}
 
 	init := func(w, h int) BoidsState {
 		fmt.Printf("%v, %v\n", w, h)
+		fmt.Println("The number of CPU Cores:", runtime.NumCPU())
 
-		nrows, ncols := h/80, w/80
 		boidsState = BoidsState{}
 
-		boidsState.Boids = make([][]float64, nrows*ncols)
+		nBoids := 1000
+
+		boidsState.Boids = make([][]float64, nBoids)
 		boidsState.Settings = BoidSettings{
 			"distMax":          50.0,
 			"velocityMax":      200.0,
@@ -138,14 +157,12 @@ func updateBoids() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) B
 			"height":           float64(h),
 		}
 
-		for i := 0; i < ncols; i++ {
-			for j := 0; j < nrows; j++ {
-				boidsState.Boids[i*nrows+j] = []float64{
-					boidsState.Settings["width"] * rand.Float64(),
-					boidsState.Settings["height"] * rand.Float64(),
-					(rand.Float64() - 0.5) * 200,
-					(rand.Float64() - 0.5) * 200,
-				}
+		for i := 0; i < nBoids; i++ {
+			boidsState.Boids[i] = []float64{
+				boidsState.Settings["width"] * rand.Float64(),
+				boidsState.Settings["height"] * rand.Float64(),
+				(rand.Float64() - 0.5) * 200,
+				(rand.Float64() - 0.5) * 200,
 			}
 		}
 

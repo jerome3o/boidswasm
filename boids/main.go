@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"syscall/js"
+	"time"
 )
 
 type JsFunc func(this js.Value, args []js.Value) interface{}
@@ -18,9 +19,16 @@ func main() {
 
 func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 
-	boidsF, init, err := updateBoids()
+	iFrame := 0
+	var cumulativeFrameTime int64 = 0
+
+	boidsF, init, err := getBoidsEngine()
 
 	updateWrapped := func(this js.Value, args []js.Value) interface{} {
+
+		iFrame += 1
+		tStart := time.Now().UnixMilli()
+
 		if err := checkUpdateArgs(args); err != nil {
 			return convertError(err)
 		}
@@ -31,7 +39,16 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 			return convertError(err)
 		}
 
-		return boidsOutputToJsFriendly(boids)
+		output := boidsOutputToJsFriendly(boids)
+
+		// TODO(j.swannack): Could be nice patternf or this using defer?
+		cumulativeFrameTime += time.Now().UnixMilli() - tStart
+		if (iFrame % NFramesToAverage) == 0 {
+			fmt.Printf("Average wrapped calculation time: %vms\n", float64(cumulativeFrameTime)/float64(NFramesToAverage))
+			cumulativeFrameTime = 0
+		}
+
+		return output
 	}
 
 	initWrapped := func(this js.Value, args []js.Value) interface{} {
