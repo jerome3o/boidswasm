@@ -8,6 +8,7 @@ let lastMs = 0.0
 let debugNextPrint = 1000
 let debugNextPrintStep = 100000
 let cumulativeDrawTime = 0.0
+let cumulativeCalculationTime = 0.0
 let nFramesToAverage = 10
 let iFrame = 0
 
@@ -119,6 +120,14 @@ function draw() {
         mouseX,
         mouseY,
     })
+
+    // debug performance logging
+    cumulativeCalculationTime += millis() - ms
+    if (iFrame % nFramesToAverage == 0) {
+        console.log(`Average js frame calculation time: ${cumulativeCalculationTime / nFramesToAverage}`)
+        cumulativeCalculationTime = 0
+    }
+
     background(255)
     boids.boids.map(v => drawBoid(...v))
 
@@ -135,9 +144,10 @@ function draw() {
 
     drawSliderText()
 
+    // debug performance logging
     cumulativeDrawTime += millis() - ms
     if (iFrame % nFramesToAverage == 0) {
-        console.log(`Average frame calculate and draw time: ${cumulativeDrawTime / nFramesToAverage}`)
+        console.log(`Average js frame calculate and draw time: ${cumulativeDrawTime / nFramesToAverage}`)
         cumulativeDrawTime = 0
     }
 }

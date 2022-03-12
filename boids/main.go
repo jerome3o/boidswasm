@@ -46,7 +46,7 @@ func getWrappedBoidsFunctions() (JsFunc, JsFunc) {
 		// TODO(j.swannack): Could be nice patternf or this using defer?
 		cumulativeFrameTime += time.Now().UnixMilli() - tStart
 		if (iFrame % NFramesToAverage) == 0 {
-			fmt.Printf("Average wrapped calculation time: %vms\n", float64(cumulativeFrameTime)/float64(NFramesToAverage))
+			fmt.Printf("Average go calculation time: %vms\n", float64(cumulativeFrameTime)/float64(NFramesToAverage))
 			cumulativeFrameTime = 0
 		}
 
