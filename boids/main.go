@@ -8,6 +8,8 @@ import (
 
 type JsFunc func(this js.Value, args []js.Value) interface{}
 
+var NFramesToAverage int = 10
+
 func main() {
 	fmt.Println("Boids Online")
 	update, init := getWrappedBoidsFunctions()

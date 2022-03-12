@@ -5,8 +5,9 @@ import (
 	"math"
 	"math/rand"
 	"runtime"
-	"time"
 )
+
+var NBoids int = 1000
 
 type BoidSettings map[string]float64
 
@@ -40,8 +41,6 @@ var defaultSettings BoidSettings = map[string]float64{
 	"height":           1000.0,
 }
 
-var NFramesToAverage int = 10
-
 func wrap(x, bound float64) float64 {
 	for x < 0 {
 		x += bound
@@ -58,14 +57,9 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 		nextBoids[i] = make([]float64, 4)
 	}
 
-	iFrame := 0
-	var cumulativeFrameTime int64 = 0
-
 	tTotal := 0.0
 
 	update := func(updateReq BoidsUpdateRequest) BoidsState {
-		iFrame += 1
-		tStart := time.Now().UnixMilli()
 
 		for k, v := range updateReq.Settings {
 			boidsState.Settings[k] = v
@@ -131,14 +125,6 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 				boidsState.Boids[i][ib] = nextBoids[i][ib]
 			}
 		}
-
-		cumulativeFrameTime += time.Now().UnixMilli() - tStart
-
-		if (iFrame % NFramesToAverage) == 0 {
-			fmt.Printf("Average inner calculation time: %vms\n", float64(cumulativeFrameTime)/float64(NFramesToAverage))
-			cumulativeFrameTime = 0
-		}
-
 		return boidsState
 	}
 
@@ -148,9 +134,7 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 
 		boidsState = BoidsState{}
 
-		nBoids := 300
-
-		boidsState.Boids = make([][]float64, nBoids)
+		boidsState.Boids = make([][]float64, NBoids)
 		boidsState.Settings = BoidSettings{
 			"distMax":          50.0,
 			"velocityMax":      200.0,
@@ -163,7 +147,7 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 			"height":           float64(h),
 		}
 
-		for i := 0; i < nBoids; i++ {
+		for i := 0; i < NBoids; i++ {
 			boidsState.Boids[i] = []float64{
 				boidsState.Settings["width"] * rand.Float64(),
 				boidsState.Settings["height"] * rand.Float64(),
