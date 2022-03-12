@@ -53,6 +53,11 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 	isInit := false
 	var boidsState BoidsState
 
+	nextBoids := make([][]float64, 2000)
+	for i := range nextBoids {
+		nextBoids[i] = make([]float64, 4)
+	}
+
 	iFrame := 0
 	var cumulativeFrameTime int64 = 0
 
@@ -85,8 +90,6 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 			return boidsState
 		}
 
-		newBoids := make([][]float64, len(boidsState.Boids))
-
 		for i, boid := range boidsState.Boids {
 			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
 			nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
@@ -117,14 +120,17 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 
 			x += vx * t
 			y += vy * t
-			newBoids[i] = make([]float64, 4)
-			newBoids[i][0] = wrap(x, width)
-			newBoids[i][1] = wrap(y, height)
-			newBoids[i][2] = vx
-			newBoids[i][3] = vy
+			nextBoids[i][0] = wrap(x, width)
+			nextBoids[i][1] = wrap(y, height)
+			nextBoids[i][2] = vx
+			nextBoids[i][3] = vy
 		}
 
-		boidsState.Boids = newBoids
+		for i, b := range boidsState.Boids {
+			for ib := range b {
+				boidsState.Boids[i][ib] = nextBoids[i][ib]
+			}
+		}
 
 		cumulativeFrameTime += time.Now().UnixMilli() - tStart
 
@@ -142,7 +148,7 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 
 		boidsState = BoidsState{}
 
-		nBoids := 1000
+		nBoids := 300
 
 		boidsState.Boids = make([][]float64, nBoids)
 		boidsState.Settings = BoidSettings{
