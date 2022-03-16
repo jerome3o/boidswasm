@@ -30,11 +30,11 @@ type BoidsUpdateRequest struct {
 }
 
 type BoidsEngine struct {
-	Update     func(update BoidsUpdateRequest) BoidsState
 	Init       func(h, w int) BoidsState
+	boidsState BoidsState
 	nextBoids  [][]float64
 	isInit     bool
-	boidsState BoidsState
+	tTotal     float64
 }
 
 var defaultSettings BoidSettings = map[string]float64{
@@ -49,11 +49,73 @@ var defaultSettings BoidSettings = map[string]float64{
 	"height":           1000.0,
 }
 
-func wrap(x, bound float64) float64 {
-	for x < 0 {
-		x += bound
+func (e *BoidsEngine) Update(updateReq BoidsUpdateRequest) BoidsState {
+
+	for k, v := range updateReq.Settings {
+		e.boidsState.Settings[k] = v
 	}
-	return math.Mod(x, bound)
+
+	t := updateReq.TimeStep
+	dMax := e.boidsState.Settings["distMax"]
+	vMax := e.boidsState.Settings["velocityMax"]
+	sFactor := e.boidsState.Settings["separationFactor"]
+	cFactor := e.boidsState.Settings["cohesionFactor"]
+	aFactor := e.boidsState.Settings["alignmentFactor"]
+	rFactor := e.boidsState.Settings["randomFactor"]
+	fFactor := e.boidsState.Settings["fearFactor"]
+	height := e.boidsState.Settings["height"]
+	width := e.boidsState.Settings["width"]
+
+	mouseX := updateReq.MouseX
+	mouseY := updateReq.MouseY
+
+	e.tTotal += t
+	if !e.isInit {
+		return e.boidsState
+	}
+
+	for i, boid := range e.boidsState.Boids {
+		x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
+		nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, e.boidsState.Boids)
+
+		for ii, debugBoid := range e.boidsState.DebugBoids {
+			if i == debugBoid.Index {
+				e.boidsState.DebugBoids[ii].Neighbours = nearBoidIndices
+			}
+		}
+
+		// TODO(j.swannack): these guys need a good debug - they get overly grouped
+		cax, cay := calculateCohesionDeltaV(x, y, width, height, vMax, nearBoids)
+		sax, say := calculateSeparationDeltaV(x, y, width, height, dMax, nearBoids)
+		aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
+		fax, fay := calculateFearDeltaV(x, y, mouseX, mouseY, width, height, vMax, nearBoids)
+
+		// TODO(j.swannack): Think more about this
+		rax, ray := math.Sin(float64(i)+e.tTotal), math.Cos(float64(i)+e.tTotal)
+
+		vx = sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax + fFactor*fax + 0.25*vx
+		vy = sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray + fFactor*fay + 0.25*vy
+
+		s := getDist(0, 0, vx, vy)
+		if s > 0 {
+			vx *= vMax / s
+			vy *= vMax / s
+		}
+
+		x += vx * t
+		y += vy * t
+		e.nextBoids[i][0] = wrap(x, width)
+		e.nextBoids[i][1] = wrap(y, height)
+		e.nextBoids[i][2] = vx
+		e.nextBoids[i][3] = vy
+	}
+
+	for i, b := range e.boidsState.Boids {
+		for ib := range b {
+			e.boidsState.Boids[i][ib] = e.nextBoids[i][ib]
+		}
+	}
+	return e.boidsState
 }
 
 func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
@@ -62,75 +124,6 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 	var nextBoids [][]float64
 
 	tTotal := 0.0
-
-	update := func(updateReq BoidsUpdateRequest) BoidsState {
-
-		for k, v := range updateReq.Settings {
-			boidsState.Settings[k] = v
-		}
-
-		t := updateReq.TimeStep
-		dMax := boidsState.Settings["distMax"]
-		vMax := boidsState.Settings["velocityMax"]
-		sFactor := boidsState.Settings["separationFactor"]
-		cFactor := boidsState.Settings["cohesionFactor"]
-		aFactor := boidsState.Settings["alignmentFactor"]
-		rFactor := boidsState.Settings["randomFactor"]
-		fFactor := boidsState.Settings["fearFactor"]
-		height := boidsState.Settings["height"]
-		width := boidsState.Settings["width"]
-
-		mouseX := updateReq.MouseX
-		mouseY := updateReq.MouseY
-
-		tTotal += t
-		if !isInit {
-			return boidsState
-		}
-
-		for i, boid := range boidsState.Boids {
-			x, y, vx, vy := boid[0], boid[1], boid[2], boid[3]
-			nearBoidIndices, nearBoids := getNearBoids(x, y, width, height, dMax, i, boidsState.Boids)
-
-			for ii, debugBoid := range boidsState.DebugBoids {
-				if i == debugBoid.Index {
-					boidsState.DebugBoids[ii].Neighbours = nearBoidIndices
-				}
-			}
-
-			// TODO(j.swannack): these guys need a good debug - they get overly grouped
-			cax, cay := calculateCohesionDeltaV(x, y, width, height, vMax, nearBoids)
-			sax, say := calculateSeparationDeltaV(x, y, width, height, dMax, nearBoids)
-			aax, aay := calculateAlignmentDeltaV(x, y, width, height, vMax, nearBoids)
-			fax, fay := calculateFearDeltaV(x, y, mouseX, mouseY, width, height, vMax, nearBoids)
-
-			// TODO(j.swannack): Think more about this
-			rax, ray := math.Sin(float64(i)+tTotal), math.Cos(float64(i)+tTotal)
-
-			vx = sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax + fFactor*fax + 0.25*vx
-			vy = sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray + fFactor*fay + 0.25*vy
-
-			s := getDist(0, 0, vx, vy)
-			if s > 0 {
-				vx *= vMax / s
-				vy *= vMax / s
-			}
-
-			x += vx * t
-			y += vy * t
-			nextBoids[i][0] = wrap(x, width)
-			nextBoids[i][1] = wrap(y, height)
-			nextBoids[i][2] = vx
-			nextBoids[i][3] = vy
-		}
-
-		for i, b := range boidsState.Boids {
-			for ib := range b {
-				boidsState.Boids[i][ib] = nextBoids[i][ib]
-			}
-		}
-		return boidsState
-	}
 
 	init := func(w, h int) BoidsState {
 		fmt.Printf("%v, %v\n", w, h)
@@ -178,6 +171,13 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 
 	return update, init, nil
 
+}
+
+func wrap(x, bound float64) float64 {
+	for x < 0 {
+		x += bound
+	}
+	return math.Mod(x, bound)
 }
 
 func calculateSeparationDeltaV(x, y, w, h, distMax float64, boids [][]float64) (ax, ay float64) {
