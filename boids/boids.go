@@ -30,7 +30,6 @@ type BoidsUpdateRequest struct {
 }
 
 type BoidsEngine struct {
-	Init       func(h, w int) BoidsState
 	boidsState BoidsState
 	nextBoids  [][]float64
 	isInit     bool
@@ -118,56 +117,56 @@ func (e *BoidsEngine) Update(updateReq BoidsUpdateRequest) BoidsState {
 	return e.boidsState
 }
 
+func (e *BoidsEngine) Init(w, h int) BoidsState {
+	fmt.Printf("%v, %v\n", w, h)
+	fmt.Println("The number of CPU Cores:", runtime.NumCPU())
+
+	e.boidsState = BoidsState{}
+
+	e.nextBoids = make([][]float64, 2000)
+	for i := range e.nextBoids {
+		e.nextBoids[i] = make([]float64, 4)
+	}
+
+	e.boidsState.Boids = make([][]float64, NBoids)
+	e.boidsState.Settings = BoidSettings{
+		"distMax":          50.0,
+		"velocityMax":      200.0,
+		"separationFactor": 3.0,
+		"cohesionFactor":   1.0,
+		"alignmentFactor":  3.0,
+		"randomFactor":     1.0,
+		"fearFactor":       1.0,
+		"width":            float64(w),
+		"height":           float64(h),
+	}
+
+	for i := 0; i < NBoids; i++ {
+		e.boidsState.Boids[i] = []float64{
+			e.boidsState.Settings["width"] * rand.Float64(),
+			e.boidsState.Settings["height"] * rand.Float64(),
+			(rand.Float64() - 0.5) * 200,
+			(rand.Float64() - 0.5) * 200,
+		}
+	}
+
+	e.boidsState.DebugBoids = []DebugBoid{
+		{
+			Index:      0,
+			Neighbours: []int{},
+		},
+	}
+
+	e.isInit = true
+	return e.boidsState
+}
+
 func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
 	isInit := false
 	var boidsState BoidsState
 	var nextBoids [][]float64
 
 	tTotal := 0.0
-
-	init := func(w, h int) BoidsState {
-		fmt.Printf("%v, %v\n", w, h)
-		fmt.Println("The number of CPU Cores:", runtime.NumCPU())
-
-		boidsState = BoidsState{}
-
-		nextBoids = make([][]float64, 2000)
-		for i := range nextBoids {
-			nextBoids[i] = make([]float64, 4)
-		}
-
-		boidsState.Boids = make([][]float64, NBoids)
-		boidsState.Settings = BoidSettings{
-			"distMax":          50.0,
-			"velocityMax":      200.0,
-			"separationFactor": 3.0,
-			"cohesionFactor":   1.0,
-			"alignmentFactor":  3.0,
-			"randomFactor":     1.0,
-			"fearFactor":       1.0,
-			"width":            float64(w),
-			"height":           float64(h),
-		}
-
-		for i := 0; i < NBoids; i++ {
-			boidsState.Boids[i] = []float64{
-				boidsState.Settings["width"] * rand.Float64(),
-				boidsState.Settings["height"] * rand.Float64(),
-				(rand.Float64() - 0.5) * 200,
-				(rand.Float64() - 0.5) * 200,
-			}
-		}
-
-		boidsState.DebugBoids = []DebugBoid{
-			{
-				Index:      0,
-				Neighbours: []int{},
-			},
-		}
-
-		isInit = true
-		return boidsState
-	}
 
 	return update, init, nil
 
