@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-var NBoids int = 1000
+var NBoids int = 200
 
 type BoidSettings map[string]float64
 
