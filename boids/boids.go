@@ -162,14 +162,11 @@ func (e *BoidsEngine) Init(w, h int) BoidsState {
 }
 
 func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
-	isInit := false
-	var boidsState BoidsState
-	var nextBoids [][]float64
-
-	tTotal := 0.0
-
-	return update, init, nil
-
+	be := BoidsEngine{
+		isInit: false,
+		tTotal: 0.0,
+	}
+	return be.Update, be.Init, nil
 }
 
 func wrap(x, bound float64) float64 {
