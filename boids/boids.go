@@ -29,6 +29,14 @@ type BoidsUpdateRequest struct {
 	MouseY   float64
 }
 
+type BoidsEngine struct {
+	Update     func(update BoidsUpdateRequest) BoidsState
+	Init       func(h, w int) BoidsState
+	nextBoids  [][]float64
+	isInit     bool
+	boidsState BoidsState
+}
+
 var defaultSettings BoidSettings = map[string]float64{
 	"distMax":          100.0,
 	"velocityMax":      300.0,
@@ -51,11 +59,7 @@ func wrap(x, bound float64) float64 {
 func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int) BoidsState, error) {
 	isInit := false
 	var boidsState BoidsState
-
-	nextBoids := make([][]float64, 2000)
-	for i := range nextBoids {
-		nextBoids[i] = make([]float64, 4)
-	}
+	var nextBoids [][]float64
 
 	tTotal := 0.0
 
@@ -133,6 +137,11 @@ func getBoidsEngine() (func(update BoidsUpdateRequest) BoidsState, func(h, w int
 		fmt.Println("The number of CPU Cores:", runtime.NumCPU())
 
 		boidsState = BoidsState{}
+
+		nextBoids = make([][]float64, 2000)
+		for i := range nextBoids {
+			nextBoids[i] = make([]float64, 4)
+		}
 
 		boidsState.Boids = make([][]float64, NBoids)
 		boidsState.Settings = BoidSettings{
