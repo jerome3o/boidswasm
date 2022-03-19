@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/rand"
 	"runtime"
+	"sort"
 )
 
 var NBoids int = 200
@@ -65,6 +66,9 @@ func (e *BoidsEngine) Update(updateReq BoidsUpdateRequest) BoidsState {
 	height := e.boidsState.Settings["height"]
 	width := e.boidsState.Settings["width"]
 
+	maxAccel := vMax / 2
+	velDecay := 100.0
+
 	mouseX := updateReq.MouseX
 	mouseY := updateReq.MouseY
 
@@ -92,14 +96,17 @@ func (e *BoidsEngine) Update(updateReq BoidsUpdateRequest) BoidsState {
 		// TODO(j.swannack): Think more about this
 		rax, ray := math.Sin(float64(i)+e.tTotal), math.Cos(float64(i)+e.tTotal)
 
-		vx = sFactor*sax + cFactor*cax + aFactor*aax + rFactor*rax + fFactor*fax + 0.25*vx
-		vy = sFactor*say + cFactor*cay + aFactor*aay + rFactor*ray + fFactor*fay + 0.25*vy
-
-		s := getDist(0, 0, vx, vy)
-		if s > 0 {
-			vx *= vMax / s
-			vy *= vMax / s
+		accels := [][]float64{
+			{cax * cFactor, cay * cFactor},
+			{sax * sFactor, say * sFactor},
+			{aax * aFactor, aay * aFactor},
+			{fax * fFactor, fay * fFactor},
+			{rax * rFactor, ray * rFactor},
 		}
+		a := aggregateAcceleration(accels, maxAccel*10)
+
+		vx += -velDecay*vx*t + a[0]
+		vy += -velDecay*vy*t + a[1]
 
 		x += vx * t
 		y += vy * t
@@ -296,4 +303,52 @@ func getWrappedDist1d(v1, v2, bound float64) float64 {
 		}
 	}
 	return dist
+}
+
+func getVectorMagnitude(values []float64) float64 {
+	sum := 0.0
+	for _, v := range values {
+		sum += math.Pow(v, 2)
+	}
+	return math.Sqrt(sum)
+}
+
+func vAdd(a, b []float64) []float64 {
+	lens := []int{len(a), len(b)}
+	sort.Ints(lens)
+	minLen := lens[0]
+	output := make([]float64, minLen)
+	for i := 0; i < minLen; i++ {
+		output[i] = a[i] + b[i]
+	}
+	return output
+}
+
+func vScale(a []float64, b float64) []float64 {
+	output := make([]float64, len(a))
+	for i, v := range a {
+		output[i] = v * b
+	}
+	return output
+}
+
+func magnitudeLess(a, b []float64) bool {
+	return getVectorMagnitude(a) < getVectorMagnitude(b)
+}
+
+func aggregateAcceleration(accels [][]float64, maxAccel float64) []float64 {
+	sort.SliceStable(accels, func(i, j int) bool { return magnitudeLess(accels[i], accels[j]) })
+	totalMag := 0.0
+	totalAccel := []float64{0.0, 0.0}
+	for _, a := range accels {
+		aMag := getVectorMagnitude(a)
+		if totalMag+aMag > maxAccel {
+			scaleFactor := (totalMag - maxAccel) / aMag
+			totalAccel = vAdd(totalAccel, vScale(a, scaleFactor))
+			break
+		}
+		totalMag += aMag
+		totalAccel = vAdd(totalAccel, a)
+	}
+	return totalAccel
 }
