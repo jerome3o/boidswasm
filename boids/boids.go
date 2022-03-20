@@ -42,7 +42,7 @@ var defaultSettings BoidSettings = map[string]float64{
 	"separationFactor": 10.0,
 	"cohesionFactor":   1.0,
 	"alignmentFactor":  1.0,
-	"randomFactor":     1.0,
+	"randomFactor":     0.0,
 	"fearFactor":       1.0,
 	"width":            1000.0,
 	"height":           1000.0,

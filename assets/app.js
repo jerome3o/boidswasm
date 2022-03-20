@@ -52,13 +52,6 @@ let sliderSpec = [
         default: 3.0
     },
     {
-        title: "Random Movement",
-        settingKey: "randomFactor",
-        min: 0,
-        max: 100,
-        default: 1.0
-    },
-    {
         title: "Fear of Mouse",
         settingKey: "fearFactor",
         min: 0,
