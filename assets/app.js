@@ -2,6 +2,14 @@ const go = new Go();
 
 let w = window.innerWidth > 0 ? window.innerWidth : screen.width;
 let h = window.innerHeight > 0 ? window.innerHeight : screen.height;
+
+WebAssembly.instantiateStreaming(fetch("boids.wasm"), go.importObject).then((result) => {
+    go.run(result.instance);
+}).then(v => {
+    console.log(initBoids(w, h));
+    boidsInitialised = true  // TODO(j.swannack): actually check for successful init
+});
+
 let boidsInitialised = false
 let lastMs = 0.0
 
@@ -35,7 +43,7 @@ let sliderSpec = [
         settingKey: "separationFactor",
         min: 0,
         max: 50,
-        default: 3.0
+        default: 20.0
     },
     {
         title: "Cohesion",
@@ -53,13 +61,6 @@ let sliderSpec = [
     }
 ]
 let sliders = {}
-
-WebAssembly.instantiateStreaming(fetch("boids.wasm"), go.importObject).then((result) => {
-    go.run(result.instance);
-}).then(v => {
-    console.log(initBoids(w, h));
-    boidsInitialised = true  // TODO(j.swannack): actually check for successful init
-});
 
 function setup() {
     createCanvas(w, h)
@@ -152,9 +153,9 @@ function drawSliderText() {
 
 function drawDebugBoid(boid, neighbours, settings) {
     push()
-    stroke("purple")
     fill(0,0,0,0)
     strokeWeight(1)
+    stroke(255, 0, 255, 50)
     circle(boid[0], boid[1], 20)
     circle(boid[0], boid[1], settings.distMax*2)
 
