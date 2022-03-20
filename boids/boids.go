@@ -43,7 +43,7 @@ var defaultSettings BoidSettings = map[string]float64{
 	"cohesionFactor":   1.0,
 	"alignmentFactor":  1.0,
 	"randomFactor":     0.0,
-	"fearFactor":       1.0,
+	"fearFactor":       100.0,
 	"width":            1000.0,
 	"height":           1000.0,
 }
@@ -130,13 +130,13 @@ func (e *BoidsEngine) Init(w, h int) BoidsState {
 
 	e.boidsState.Boids = make([][]float64, NBoids)
 	e.boidsState.Settings = BoidSettings{
-		"distMax":          50.0,
-		"velocityMax":      200.0,
-		"separationFactor": 3.0,
-		"cohesionFactor":   1.0,
-		"alignmentFactor":  3.0,
-		"randomFactor":     1.0,
-		"fearFactor":       1.0,
+		"distMax":          defaultSettings["distMax"],
+		"velocityMax":      defaultSettings["velocityMax"],
+		"separationFactor": defaultSettings["separationFactor"],
+		"cohesionFactor":   defaultSettings["cohesionFactor"],
+		"alignmentFactor":  defaultSettings["alignmentFactor"],
+		"randomFactor":     defaultSettings["randomFactor"],
+		"fearFactor":       defaultSettings["fearFactor"],
 		"width":            float64(w),
 		"height":           float64(h),
 	}

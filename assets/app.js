@@ -24,7 +24,7 @@ let sliderSpec = [
         default: 50.0
     },
     {
-        title: "Maximum Velocity",
+        title: "Velocity",
         settingKey: "velocityMax",
         min: 0,
         max: 1000,
@@ -50,14 +50,7 @@ let sliderSpec = [
         min: 0,
         max: 10,
         default: 3.0
-    },
-    {
-        title: "Fear of Mouse",
-        settingKey: "fearFactor",
-        min: 0,
-        max: 100,
-        default: 50.0
-    },
+    }
 ]
 let sliders = {}
 
