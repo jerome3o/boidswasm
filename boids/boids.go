@@ -187,20 +187,10 @@ func calculateSeparationDeltaV(x, y, w, h, distMax float64, boids [][]float64) (
 
 		dx := getWrappedDist1d(b[0], x, w)
 		dy := getWrappedDist1d(b[1], y, h)
-
-		dxSign := 1.0
-		if dx < 0 {
-			dxSign = -1.0
-		}
-		dySign := 1.0
-		if dy < 0 {
-			dySign = -1.0
-		}
-
-		ax += math.Min(distMax/math.Max(math.Abs(dx), 1), 2*distMax) * dxSign
-		ay += math.Min(distMax/math.Max(math.Abs(dy), 1), 2*distMax) * dySign
+		d := getDist(dx, dy, 0.0, 0.0)
+		ax += 10 * dx / math.Pow(d, 2)
+		ay += 10 * dy / math.Pow(d, 2)
 	}
-
 	return ax, ay
 }
 
